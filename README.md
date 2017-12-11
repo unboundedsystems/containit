@@ -44,7 +44,7 @@ work.
 ## Node.js Project Example
 
 To setup a directory called my-project to use the latest Node.js version 8 to
-run npm and node, do the following:
+run npm, node, and anything from `$(npm bin)/...`, do the following:
 ```
 $ cd my-project
 $ git clone https://github.com/unboundedsystems/containit
@@ -52,6 +52,7 @@ $ mkdir bin
 $ cat > bin/node <<END
 #!/usr/bin/env bash
 IMAGE="node:8"
+CTR_ADD_PATH="/src/node_modules/.bin"
 BIN_DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" && pwd )"
 . "\${BIN_DIR}/../containit/containit.sh"
 END
