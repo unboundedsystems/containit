@@ -3,125 +3,100 @@ The easy button for running commands in containers.
 
 [ContainIt on GitHub](https://github.com/unboundedsystems/containit)
 
-Are you tired of having to ensure that you have the correct versions of all
-your dev tools installed on every system where you use them? And what about
-when OLDER versions of your source code need OLDER tools? And how do you
-keep track of which tool versions are needed alongside your source code?
+ContainIt is designed to make it easy to run commands in containers
+instead of just running the native command.  This makes it much easier
+to get the right versions of build and deployment tools, work with
+different command versions, and commands that don't have native
+packages on the host operating system.
 
-The obvious answer is: use containers. But that's such a pain...until now!
-
-```console
-~/exampleproj$ git checkout latest
-Switched to branch 'latest'
-
-~/exampleproj$ bin/node --version
-v9.2.0
-
-~/exampleproj$ git checkout really_old_version
-Switched to branch 'really_old_version'
-
-~/exampleproj$ bin/node --version
-v4.8.6
+## QuickStart
+To setup a directory hierarchy to use ContainIt to run commands in a container, do the following:
+```
+$ cd top-level
+# Clone into the directory, or create a git submodule if top-level is a repo
+$ git clone https://github.com/unboundedsystems/containit
+$ mkdir bin
+$ cat > bin/command-that-describes-my-container <<END
+#!/usr/bin/env bash
+IMAGE="my-container-image:my-container-image-tag"
+BIN_DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" && pwd )"
+. "\${BIN_DIR}/../containit/containit.sh"
+END
+$ chmod 755 bin/command-that-describes-my-container
 ```
 
-# Quick Start
-Let's use an example project that we'll creatively call `exampleproj`.
-Although it could be any kind of project, we'll say it's a Node.js NPM
-module just to show a few specifics.
+Now, any command can be run inside `my-container-image` by just
+creating a symlink `bin/command-that-describes-my-container`.  For
+example, to run `bash` inside the container:
+```
+$ ln -s command-that-describes-my-container bin/bash
+```
+Running `./bin/bash` will run bash inside a container created from
+`my-container-image`.  Once `bash` exits, the container will be
+destroyed.
 
-So for `exampleproj`, we want to be able to run specific versions of these
-executables:
-* npm
-* node
-* gulp
-* bash (for occasional troubleshooting and poking around in the container)
+Within the container, top-level will be mounted at `/src`.  The only
+caveat is that you must run any linked command from a sub-directory of
+`top-level`.  So, `../../bin/bash` from within some sub-directory tree
+of top-level will work, but `/path/to/top-level` from, say `/`, will not
+work.
 
-(For the completed example directory, look in the `exampleproj` directory).
+## Node.js Project Example
 
-Let's get started!
+To setup a directory called my-project to use the latest Node.js version 8 to
+run npm and node, do the following:
+```
+$ cd my-project
+$ git clone https://github.com/unboundedsystems/containit
+$ mkdir bin
+$ cat > bin/node <<END
+#!/usr/bin/env bash
+IMAGE="node:8"
+BIN_DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" && pwd )"
+. "\${BIN_DIR}/../containit/containit.sh"
+END
+```
 
-1.  First, identify your `PROJECT_ROOT` directory. This is the top level
-    directory that you wish to have available inside the container. It's
-    typically the root of your source code project.
-   
-    In our example, `PROJECT_ROOT` will be `~/exampleproj`.
+Now, you can initialize your package.json with the correct `npm` by doing:
+```
+$ ./bin/npm init
+```
 
-2.  Create a `BIN_DIR` directory that is a child of `PROJECT_ROOT` where
-    executables will go. A typical name for this directory would be
-    `PROJECT_ROOT/bin`. You can also use an already existing directory, but
-    it MUST be exactly one level below `PROJECT_ROOT`.
+You can start interactive node by doing:
+```
+$ ./bin/node
+```
 
-    In our example, `BIN_DIR` is `~/exampleproj/bin`.
-    ```console
-    mkdir ~/exampleproj/bin
-    ```
+And so on.
 
-3.  Put the script `containit.sh` somewhere convenient. You only need one copy
-    of it accessible for any number of different projects and/or containers
-    that you want to use. However, you may wish to keep it under source
-    control, either as a clone of the ContainIt repo or in your project.
+## Options
 
-    For our example, we'll choose to make a copy of it and put it in the
-    `BIN_DIR` for our project so it's under source control along with the
-    rest of the project.
-    ```console
-    cp ./containit.sh ~/exampleproj/bin
-    ```
+ContainIt supports a few other options to customize behavior and
+location of files.  See `command` in this repository for more
+discussion, and look at the source of `containit.sh` for more details.
 
-4.  Copy the script `command` to `BIN_DIR` but rename it with the name of a
-    command you want to be able to run in the container.
+## Caveats
 
-    For our example:
-    ```console
-    cp ./command ~/exampleproj/bin/node
-    ```
+`containit.sh` only works when a sourcing or linking script is run from
+a directory one-level up from the command being invoked (`top-level`
+in the example above) because of how it calculates what to mount as
+`/src`.
 
-5.  Ensure the permissions on that new copy of this file allow execution:
-    ```console
-    chmod 775 ~/exampleproj/bin/node
-    ```
+`containit.sh` attempts to handle Docker signal issues by wrapping the
+command that will executed inside the container with a shell script to
+forward appropriate signals to the executed command.  However, some
+behavior will stil vary from native shell execution.  Pull requests to
+address any shortcomings are welcome.
 
-6.  Edit that new copy of the command file. Look for the two sections that
-    have `CHANGEME` in the comment and make changes according to the
-    directions. The changes are:
-    * Set the variable `IMAGE` to the name (and optionally tag or digest)
-      of the Docker image you want to use.
-    * Set the variable `CONTAINIT` to the path to the containit.sh script.
+`containit.sh` does not attempt change docker's behavior to split
+various output file descriptors (stdout, and stderr being the most
+common) to support shell redirects of these streams to different
+files.  Again, a pull request addressing this would be most welcome.
 
-    For our example, we want to use the official Node.js 9.2.0 container from
-    DockerHub and we put containit.sh in `BIN_DIR`, so we'll set them
-    like this:
-    ```console
-    IMAGE=node:9.2.0
-    CONTAINIT="${BIN_DIR}/containit.sh"
-    ```
-
-    We now have our first container command ready to run!
-    ```console
-    ~/exampleproj/bin/node --version
-    v9.2.0
-    ```
-
-7.  For the rest of the commands, we want to use the same node:9.2.0
-    Docker image, so all we need to do is to create symbolic links to our
-    edited file above with the names of the commands we want to run in the
-    container.
-
-    We also want to run node, gulp, and bash, so we'll create 3 symbolic
-    links in `BIN_DIR`:
-    ```console
-    cd ~/exampleproj/bin
-    ln -s node npm
-    ln -s node gulp
-    ln -s node bash
-    ```
-
-8.  Run your commands using the soft links you just created. For example,
-    to run npm:
-    ```console
-    cd ~/exampleproj
-    bin/npm install express
-    ```
-    
-    Here, the npm that runs is the version bundled into the node:9.2.0
-    container we specified above.
+For example, the following will not work:
+```
+$ ./bin/node index.js 2>/dev/null 1>myout
+```
+In this case stderr and stdout output will end up in `myout` because
+ContainIt will add the `-t` flag to `docker run` which loses the
+distinction between stderr and stdout.
