@@ -32,6 +32,8 @@ IMAGE=alpine:latest
 # DO NOT CHANGE THIS LINE
 BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+# A colon separated list of directories to add to $PATH
+# CTR_ADD_PATH="./node_modules/.bin:/opt/bin/foo"
 
 # CHANGEME
 #

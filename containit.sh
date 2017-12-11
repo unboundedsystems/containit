@@ -152,18 +152,15 @@ trap 'sig_handler TERM 143' TERM
 # Move shell stdin to fd 3
 exec 3<&0 0<&-
 
+PATH=\${PATH}:"${CTR_ADD_PATH}"
+export PATH
 "$EXEC_CMD" $ARGS <&3 &
 child=\$!
 wait \$child
 ENDWRAPPER
 )
 
-
-# Set the path explicitly. Include node_modules/.bin. So that way a soft link
-# to this file called "gulp" will execute the gulp in node_modules/.bin
-CTR_PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:${CTR_PROJECT_ROOT}/node_modules/.bin"
-
-DOCKER_ARGS=(-i --rm -w "${WORK_DIR}" "-v${PROJECT_ROOT}:${CTR_PROJECT_ROOT}" -e "PATH=${CTR_PATH}")
+DOCKER_ARGS=(-i --rm -w "${WORK_DIR}" "-v${PROJECT_ROOT}:${CTR_PROJECT_ROOT}")
 
 # Unset NPM_CONFIG_LOGLEVEL that the official node container sets so any
 # .npmrc log level settings can take effect if desired
