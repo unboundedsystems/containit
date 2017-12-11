@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+
+# ContainIt - The easy button for running commands in containers
+#             https://github.com/unboundedsystems/containit
+#
+# Copyright (c) 2017 Unbounded Systems, LLC
+#
+# For more info on how to use this file, see README.md
+
+
+# CHANGEME
+#
+# Set the IMAGE variable below to the name of the Docker image you'd like to
+# use to run your commands. You can specify any image name that's valid on
+# the 'docker run' command line, including an optional tag or digest.
+# Examples:
+#    IMAGE=alpine
+#    IMAGE=alpine:latest
+#    IMAGE=node:8.9.2
+#    IMAGE=alpine@sha256:9cacb71397b640eca97488cf08582ae4e4068513101088e9f96c9814bfda95e0
+#
+# CHANGE THE LINE BELOW
+IMAGE=alpine:latest
+
+
+# The absolute path of the directory where the "executable" is. The
+# "executable" here could be either:
+#   1. This script.
+#      Then BIN_DIR is the directory where this script is located.
+#   2. A soft link to this script.
+#      Then BIN_DIR is the directory where the soft link is located.
+# DO NOT CHANGE THIS LINE
+BIN_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+
+# CHANGEME
+#
+# Set the CONTAINIT variable below to be the absolute path to
+# the containit.sh script. The containit.sh script can be located at any
+# valid path, but a few typical cases are below. Uncomment only the one that
+# fits your needs or modify as needed. Case 1 is uncommented by default.
+#
+# Case 1: containit.sh is installed in your project's BIN_DIR (in the same
+#         directory as this file):
+#CONTAINIT="${BIN_DIR}/containit.sh"
+#
+# Case 2: A clone of the containit git repo is in your PROJECT_DIR. (Your
+#         PROJECT_DIR is the parent directory of BIN_DIR):
+#CONTAINIT="${BIN_DIR}/../containit/containit.sh"
+#
+# Case 3: A clone of the containit git repo is in your home directory:
+#CONTAINIT="${HOME}/containit/containit.sh"
+#
+# Case 4: Some other absolute path
+#CONTAINIT="/some/path/to/containit.sh"
+
+
+# Source the containit.sh script
+. "${CONTAINIT}"
