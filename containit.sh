@@ -160,15 +160,16 @@ wait \$child
 ENDWRAPPER
 )
 
-DOCKER_ARGS=(-i --rm -w "${WORK_DIR}" "-v${PROJECT_ROOT}:${CTR_PROJECT_ROOT}")
+
+INNER_DOCKER_ARGS=(-i --rm -w "${WORK_DIR}" "-v${PROJECT_ROOT}:${CTR_PROJECT_ROOT}")
 
 # Unset NPM_CONFIG_LOGLEVEL that the official node container sets so any
 # .npmrc log level settings can take effect if desired
-DOCKER_ARGS+=(-e NPM_CONFIG_LOGLEVEL)
+INNER_DOCKER_ARGS+=(-e NPM_CONFIG_LOGLEVEL)
 
 # If stdin is a TTY, have docker allocate a PTY with -t
 if [ -t 0 ]; then
-    DOCKER_ARGS+=(-t)
+    INNER_DOCKER_ARGS+=(-t)
 fi
 
-exec docker run "${DOCKER_ARGS[@]}" ${N8_ARGS:-} "${DOCKER_IMAGE}" sh -c "${WRAPPER}"
+exec docker run "${INNER_DOCKER_ARGS[@]}" ${DOCKER_ARGS:-} "${DOCKER_IMAGE}" sh -c "${WRAPPER}"

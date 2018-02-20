@@ -12,17 +12,17 @@ packages on the host operating system.
 ## QuickStart
 To setup a directory hierarchy to use ContainIt to run commands in a container, do the following:
 ```
-$ cd top-level
+cd top-level
 # Clone into the directory, or create a git submodule if top-level is a repo
-$ git clone https://github.com/unboundedsystems/containit
-$ mkdir bin
-$ cat > bin/command-that-describes-my-container <<END
+git clone https://github.com/unboundedsystems/containit
+mkdir bin
+cat > bin/command-that-describes-my-container <<END
 #!/usr/bin/env bash
 IMAGE="my-container-image:my-container-image-tag"
 BIN_DIR="\$( cd "\$( dirname "\${BASH_SOURCE[0]}" )" && pwd )"
 . "\${BIN_DIR}/../containit/containit.sh"
 END
-$ chmod 755 bin/command-that-describes-my-container
+chmod 755 bin/command-that-describes-my-container
 ```
 
 Now, any command can be run inside `my-container-image` by just
@@ -46,10 +46,10 @@ work.
 To setup a directory called my-project to use the latest Node.js version 8 to
 run npm, node, and anything from `$(npm bin)/...`, do the following:
 ```
-$ cd my-project
-$ git clone https://github.com/unboundedsystems/containit
-$ mkdir bin
-$ cat > bin/node <<END
+cd my-project
+git clone https://github.com/unboundedsystems/containit
+mkdir bin
+cat > bin/node <<END
 #!/usr/bin/env bash
 IMAGE="node:8"
 CTR_ADD_PATH="/src/node_modules/.bin"
@@ -70,7 +70,16 @@ $ ./bin/node
 
 And so on.
 
-## Options
+## Docker Arguments
+
+To pass extra arguments to docker, use the `DOCKER_ARGS` environment variable.
+For example, to start a node process that listens on port 80 in the container 
+and expose port 8080 on the host do:
+```
+DOCKER_ARGS="-p 8080:80" ./bin/node myprog.js
+```
+
+## Other Options
 
 ContainIt supports a few other options to customize behavior and
 location of files.  See `command` in this repository for more
