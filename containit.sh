@@ -103,7 +103,7 @@ DOCKER_IMAGE="${IMAGE:-alpine:latest}"
 # The command to execute in the container is the command "name" we were called
 # with. The intended use is for soft links to point to this file with names
 # like "npm". That would execute npm inside the container.
-EXEC_CMD="$(basename "$0")"
+EXEC_CMD="${EXEC_CMD:-$(basename "$0")}"
 
 BIN_DIR="$(realPath "$(dirname "$0")")"
 PROJECT_ROOT="$(realPath "${BIN_DIR}/..")"
